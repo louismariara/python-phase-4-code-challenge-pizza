@@ -32,25 +32,28 @@ class TestApp:
             for restaurant in response:
                 assert 'restaurant_pizzas' not in restaurant
 
-    def test_restaurants_id(self):
-        '''retrieves one restaurant using its ID with GET request to /restaurants/<int:id>.'''
+def test_restaurants_id(self):
+    '''retrieves one restaurant using its ID with GET request to /restaurants/.'''
 
-        with app.app_context():
-            fake = Faker()
-            restaurant = Restaurant(name=fake.name(), address=fake.address())
-            db.session.add(restaurant)
-            db.session.commit()
+    with app.app_context():
+        fake = Faker()
+        restaurant = Restaurant(name=fake.name(), address=fake.address())
+        db.session.add(restaurant)
+        db.session.commit()
 
-            response = app.test_client().get(
-                f'/restaurants/{restaurant.id}')
-            assert response.status_code == 200
-            assert response.content_type == 'application/json'
-            response = response.json
-            assert response['id'] == restaurant.id
-            assert response['name'] == restaurant.name
-            assert response['address'] == restaurant.address
-            assert 'restaurant_pizzas' in response
+        # Debug: Verify the restaurant exists in the database
+        saved_restaurant = Restaurant.query.get(restaurant.id)
+        assert saved_restaurant is not None, "Restaurant was not saved to the database"
 
+        response = app.test_client().get(f'/restaurants/{restaurant.id}')
+        assert response.status_code == 200
+        assert response.content_type == 'application/json'
+        response = response.json
+        assert response['id'] == restaurant.id
+        assert response['name'] == restaurant.name
+        assert response['address'] == restaurant.address
+        assert 'restaurant_pizzas' in response
+        
     def test_returns_404_if_no_restaurant_to_get(self):
         '''returns an error message and 404 status code with GET request to /restaurants/<int:id> by a non-existent ID.'''
 
